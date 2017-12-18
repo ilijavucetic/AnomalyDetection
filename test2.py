@@ -20,6 +20,10 @@ from collections import OrderedDict
 
 class BarBp:
 
+    distance = 500
+    duration = None
+    average_speed = 0
+
     max_start_latency = 5 * 60
     max_end_latency = 45 * 60
     min_stop_duration = 60
@@ -32,6 +36,17 @@ class BarBp:
         self.journey_start = journey_start
         self.load_data()
         self.write_file()
+        self.duration = self.calculate_journey_duration()
+        self.average_speed = self.calculate_average_speed()
+        print(self.duration)
+        print(self.average_speed)
+
+
+    def calculate_average_speed(self):
+        s = self.distance
+        t = self.duration
+        speed = self.distance/float(t)
+        return speed
 
     def load_data(self):
         file_name = 'bar_beograd.csv'
@@ -88,6 +103,15 @@ class BarBp:
         return str(datetime.strptime(start_time, time_format) - datetime.strptime(end_time, time_format))
 
     @staticmethod
+    def calculate_time_difference_in_hours(start_time, end_time, time_format='%Y-%m-%d %H:%M:%S'):
+        diff = datetime.strptime(start_time, time_format) - datetime.strptime(end_time, time_format)
+        days = diff.days
+        diff_btw_two_times = diff.seconds / 3600
+        days_to_hours = days * 24
+        overall_hours = days_to_hours + diff_btw_two_times
+        return str(overall_hours)
+
+    @staticmethod
     def add_seconds(time, seconds, time_format='%Y-%m-%d %H:%M:%S'):
         return str(datetime.strptime(time, time_format) + timedelta(seconds=seconds))
 
@@ -117,19 +141,21 @@ class BarBp:
         random.shuffle(stops)
         dict_travel_list = self.randomize_latency(travel_latency, stops)
 
-        #print(self.input_data)
+        self.add_latency(dict_stop_list)
+        self.add_latency(dict_travel_list)
+    #def make_stop(self):
+
+    def add_latency(self, latency_dict):
         sum_stop_latency = 0
-        sum_travel_latency = 0
         any_stop_is_late = False
         is_first = True
-
         for i in range(len(self.input_data)):
             departure_time = self.input_data[i]['departure']
             arrival_time = self.input_data[i]['arrival']
-
-            for index, latency in dict_stop_list.items():
+            for index, latency in latency_dict.items():
                 if i == index:
                     sum_stop_latency += latency
+                    print(sum_stop_latency)
                     any_stop_is_late = True
                     break
 
@@ -140,46 +166,23 @@ class BarBp:
                 if not is_first:
                     new_arrival = self.add_seconds(arrival_time, sum_stop_latency)
                     self.input_data[i]['arrival'] = new_arrival
-                    print(new_arrival)
 
                 is_first = False
 
-                # print(new_departure)
-                # print(2)
-
-
-            # for index, latency in dict_travel_list.items():
-            #     sum_travel_latency += latency
-            #     if i == index:
-            #         new_travel_date = self.add_seconds(departure_time, sum_travel_latency)
-            #         print(new_date)
-            #         break
-
-
-
-            # for j in range(len(dict_stop_list)):
-            #     print()
-            #
-            #     # index = dict_stop_list[j]['index']
-            #     # latency = dict_stop_list[j]['latency']
-            #     #
-            #     # if i == index:
-            #     #     new_date = self.add_seconds(departure_time, latency)
-            #     #     print(new_date)
-            #     #     break
-
-    #def make_stop(self):
-
     def write_file(self):
         file_write = csv.writer(open(self.output_file, 'w', newline=''), delimiter=',')
-        file_write.writerow(['Spam'] * 5 + ['Baked Beans'])
-        file_write.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])
+        #file_write.writerow(['Spam'] * 5 + ['Baked Beans'])
+        #file_write.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])
 
         for i in range(len(self.input_data)):
             file_write.writerow([self.input_data[i]['arrival'],
                                  self.input_data[i]['departure']])
 
-
+    def calculate_journey_duration(self):
+        start = self.input_data[0]['departure']
+        end = self.input_data[len(self.input_data)-1]['arrival']
+        duration = self.calculate_time_difference_in_hours(end, start)
+        return duration
 
 start_dates = ['19:59', '06:40']
 
