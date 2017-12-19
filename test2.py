@@ -18,11 +18,14 @@ from collections import OrderedDict
 #
 # journey1 = BarBp(journey_start)
 
+
 class BarBp:
 
     distance = 500
     duration = None
     average_speed = 0
+
+    journey_end = None
 
     max_start_latency = 5 * 60
     max_end_latency = 45 * 60
@@ -38,9 +41,9 @@ class BarBp:
         self.write_file()
         self.duration = self.calculate_journey_duration()
         self.average_speed = self.calculate_average_speed()
-        print(self.duration)
-        print(self.average_speed)
-
+        self.generate_raw_data()
+        #print(self.duration)
+        #print(self.average_speed)
 
     def calculate_average_speed(self):
         s = self.distance
@@ -181,14 +184,73 @@ class BarBp:
     def calculate_journey_duration(self):
         start = self.input_data[0]['departure']
         end = self.input_data[len(self.input_data)-1]['arrival']
+        self.journey_end = end
         duration = self.calculate_time_difference_in_hours(end, start)
         return duration
+
+    def generate_raw_data(self):
+        start_date_string = self.journey_start
+        start_date = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M:%S')
+        end_date_string = self.journey_end
+        end_date = datetime.strptime(end_date_string, '%Y-%m-%d %H:%M:%S')
+
+        temp_date = start_date
+
+        print(temp_date)
+        print(end_date)
+
+        data = []
+
+        file_write = csv.writer(open('row_data', 'w', newline=''), delimiter=',')
+
+        while temp_date < end_date:
+
+            for i in range(len(self.input_data)):
+                arrival_timing = datetime.strptime(self.input_data[i]['arrival'], '%Y-%m-%d %H:%M:%S')
+                departure_timing = datetime.strptime(self.input_data[i]['departure'], '%Y-%m-%d %H:%M:%S')
+
+                arrival_timing_deceleration = arrival_timing - timedelta(minutes=1)
+                arrival_timing_acceleration = arrival_timing + timedelta(minutes=1)
+
+                departure_timing_deceleration = departure_timing - timedelta(minutes=1)
+                departure_timing_acceleration = departure_timing + timedelta(minutes=1)
+
+                speed = None
+                acceleration = None
+
+                if temp_date >= arrival_timing and temp_date <= departure_timing:
+                    speed = 0
+                    acceleration = 0
+                    print(speed)
+                    print(acceleration)
+                elif temp_date > departure_timing and  temp_date < departure_timing_acceleration:
+                    speed = 20
+                    acceleration = 20
+                elif temp_date > departure_timing_deceleration and temp_date < departure_timing:
+                    speed = 20
+                    acceleration = -20
+                elif temp_date > arrival_timing and  temp_date < arrival_timing_acceleration:
+                    speed = 20
+                    acceleration = 20
+                elif temp_date > arrival_timing_deceleration and temp_date < arrival_timing:
+                    speed = 20
+                    acceleration = -20
+                else:
+                    speed = 40
+                    acceleration = 0
+
+                if speed is not None:
+                    print(speed)
+                    print(acceleration)
+
+                file_write.writerow([self.input_data[i]['arrival'], self.input_data[i]['departure'], speed, acceleration])
+            temp_date = temp_date + timedelta(minutes=5)
 
 start_dates = ['19:59', '06:40']
 
 now = datetime.now()
 current_date = now.strftime("%Y-%m-%d ")
 
-journey_start = current_date + start_dates[0] + ':00'
-
+#journey_start = current_date + start_dates[0] + ':00'
+journey_start = '2017-12-16 08:20:00'
 x = BarBp(journey_start)
