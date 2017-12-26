@@ -210,40 +210,41 @@ class BarBp:
                 departure_timing = datetime.strptime(self.input_data[i]['departure'], '%Y-%m-%d %H:%M:%S')
 
                 arrival_timing_deceleration = arrival_timing - timedelta(minutes=1)
-                arrival_timing_acceleration = arrival_timing + timedelta(minutes=1)
+                #arrival_timing_acceleration = arrival_timing + timedelta(minutes=1)
 
-                departure_timing_deceleration = departure_timing - timedelta(minutes=1)
+                #departure_timing_deceleration = departure_timing - timedelta(minutes=1)
                 departure_timing_acceleration = departure_timing + timedelta(minutes=1)
 
                 speed = None
                 acceleration = None
+                temparature = None
 
-                if temp_date >= arrival_timing and temp_date <= departure_timing:
+                # STOP
+                if arrival_timing <= temp_date <= departure_timing:
                     speed = 0
                     acceleration = 0
-                    print(speed)
-                    print(acceleration)
-                elif temp_date > departure_timing and  temp_date < departure_timing_acceleration:
+                    temperature = 25
+                # DEPARTURE ACCELERATION
+                elif departure_timing < temp_date < departure_timing_acceleration:
                     speed = 20
                     acceleration = 20
-                elif temp_date > departure_timing_deceleration and temp_date < departure_timing:
+                    temperature = 63
+                # ARRIVAL DECELERATION
+                elif arrival_timing_deceleration < temp_date < arrival_timing:
                     speed = 20
                     acceleration = -20
-                elif temp_date > arrival_timing and  temp_date < arrival_timing_acceleration:
-                    speed = 20
-                    acceleration = 20
-                elif temp_date > arrival_timing_deceleration and temp_date < arrival_timing:
-                    speed = 20
-                    acceleration = -20
+                    temperature = 53
                 else:
                     speed = 40
                     acceleration = 0
+                    temperature = 44
 
-                if speed is not None:
-                    print(speed)
-                    print(acceleration)
+                # if speed is not None:
+                #     print(speed)
+                #     print(acceleration)
 
-                file_write.writerow([self.input_data[i]['arrival'], self.input_data[i]['departure'], speed, acceleration])
+                file_write.writerow([self.input_data[i]['arrival'], self.input_data[i]['departure'],
+                                     speed, acceleration, temperature])
             temp_date = temp_date + timedelta(minutes=5)
 
 start_dates = ['19:59', '06:40']
