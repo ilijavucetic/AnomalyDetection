@@ -40,3 +40,11 @@ with open(file_name, newline='', encoding='utf-8') as csvfile:
             # dict_list[customer_id] = dict_list[customer_id].append(items)
             # print(dict_list[customer_id])
 print(dict_list)
+
+file_write = csv.writer(open('user_transaction.csv', 'w', newline=''), delimiter=',')
+
+for key, value in dict_list.items():
+
+    list_string = ''.join(value)
+    file_write.writerow([key, list_string])
+
