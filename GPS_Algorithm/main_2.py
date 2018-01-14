@@ -63,6 +63,8 @@ def generate_sequence_2(items, sequences):
 
 def generate_sequence_3(items, sequences_2):
 
+    sequence_3 = []
+
     cross_table = {}
 
     for sequence in sequences_2:
@@ -104,18 +106,21 @@ def generate_sequence_3(items, sequences_2):
 
             if key != key_other:
 
-                sequence_other_minus_last = cross_table[key]["second"]
+                sequence_other_minus_last = cross_table[key_other]["second"]
                 break_outer = False
                 for first in sequence_minus_first:
                     if break_outer:
                         break
+
                     for last in sequence_other_minus_last:
+
                         if first == last:
                             #print("First ", sequence)
                             #print("Second ", sequence_other)
                             #print(sequence_other[lenth_other-1])
 
-                            get_new_sequence(sequence, sequence_other)
+                            temp = get_new_sequence(sequence, sequence_other)
+                            sequence_3.append(temp)
 
                             break_outer = True
                             break
@@ -134,24 +139,29 @@ def generate_sequence_3(items, sequences_2):
 
 
     #print(sequences_2)
-    print(cross_table)
+    print(sequence_3)
+    #print(cross_table)
 
 
 def get_new_sequence(s1, s2):
+    #print("S1", s1)
+    #print("S2", s2)
+
     if isinstance(s2[len(s2) - 1], list):
-        #print(s1)
-        #print(s2)
-        s3 = s1 + s2
+        s3 = [s1]
+        s3 += s2[1:]
         #print("Seperate")
     else:
-        s3 = s2[:]
-        s3.remove(s3[-1])
-        new_s = []
-        new_s.append(s1[-1])
-        new_s.append(s2[-1])
-        s3.append(new_s)
-        print("Together")
-        print(s3)
+        #print("Together")
+
+        #print(s1+s3)
+
+        s3 = s1[:]
+        temp = s2[1:]
+        for elem in temp:
+            s3.append(elem)
+    #print(s3)
+    return s3
 
 
 def check_support(check_sequence, sequencies, support=1):
@@ -242,6 +252,9 @@ items = get_sequence_ellements(sequences)
 #items = ['1', '2']
 support = calculate_support(items, sequences)
 possible = generate_sequence_2(items, sequences)
+# s1 = ['3', '4']
+# s2 = ['1', '2']
+# possible = [s1, s2]
 possible_3 = generate_sequence_3(items, possible)
 
 #to_string(['1', '2'])
