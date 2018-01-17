@@ -24,27 +24,41 @@
 # #print(a2)
 
 
-def detectSequence(detect_sequences, sequence, detect_seq_length):
-    print(detect_sequences)
-    print(sequence)
-    print("ALO BRE")
-    # detect_seq_length = len(detect_seq)
-    # if detect_seq_length > 1:
-    #
-    #     for detect_seq in detect_sequences:
-    #         seq_exists = detect_seq in
-    #
-    #     pass
-    # else:
-    #     pass
+def detectSequence(detect_sequences, sequence, sequence_index):
 
+    #print(sequence)
+    #print(sequence_index)
+    for i in range(1, len(detect_sequences)):
 
+        # print(detect_sequences)
+        # print(sequence)
+        print(sequence_index)
+        # print("ALO BRE")
 
+        d_sequence = detect_sequences[i]
+        detect_seq_length = len(d_sequence)
 
+        for detect_seq_elem in d_sequence:
+            elements_matched = 0
+
+            #sequences_length = len(sequence)
+            #print(sequence)
+            #print(sequence_index)
+            #print(sequence_index+detect_seq_length)
+            for j in range(sequence_index, sequence_index+detect_seq_length):
+
+                seq_exists = detect_seq_elem in sequence[j]
+                if seq_exists:
+                    elements_matched += 1
+            part_matched = elements_matched == detect_seq_length
+            print(part_matched)
+
+            return part_matched
 
 sequences = []
 
-s1 = [["1", "2"],["1"],["1", "2"], ["3"],['6'], ['7', '8'], ["1", "2"], ["4"], ["1"], ["3", "4"], ["2"], ["3", "4"], ["2"], ["3", "5"]]
+s1 = [["1", "2"],["1"],["1", "2"], ["3"],['6'], ['7', '8'],
+      ["1", "2"], ["4"], ["1"], ["3", "4"], ["2"], ["3", "4"], ["2"], ["3", "5"]]
 s2 = [["1", "2"], ["4"]]
 s3 = [["1"], ["3", "4"]]
 s4 = [["1", "3"], ["5"]]
@@ -86,34 +100,48 @@ while not is_detected:
 
         #check = check_sequence(detect_seq, sequences)
         #print(detect_seq)
-        if detect_seq_length > 1:
+        # if detect_seq_length > 1:
 
-            for detect_seq_elem in detect_seq:
-                #print(detect_seq_elem)
-                elements_matched = 0
-                seq_index = 0
+        if is_detected:
+            break
 
-                sequences_length = len(sequence)
-                for seq in sequence:
-                    for seq_elem in seq:
-                        seq_exists = detect_seq_elem in seq_elem
-                        if seq_exists:
-                            elements_matched += 1
-                    part_matched = elements_matched == detect_seq_length
+        for detect_seq_elem in detect_seq:
+            #print(detect_seq_elem)
+            elements_matched = 0
+            seq_index = 0
+
+            sequences_length = len(sequence)
+            #print(sequence)
+            for seq in sequence:
+                for seq_elem in seq:
+                    seq_exists = detect_seq_elem in seq_elem
+                    if seq_exists:
+                        elements_matched += 1
+                part_matched = elements_matched == detect_seq_length
+                print(index)
+                #print(index < detect_seq_length-1)
+                #print(seq_index<seq_length-1)
+                #print(part_matched)
+                #print(detect_sequence[index])
+                if part_matched and index <= detect_seq_length-1 and seq_index <= sequences_length - detect_seq_length - 1:
+
+                    # for i in range(1, detect_seq_length):
+                    #
+                    matched = detectSequence(detect_sequence, sequence, seq_index+1)
+
+                    if matched:
+                        is_detected = True
+                        break
                     #print(index)
-                    #print(index < detect_seq_length-1)
-                    #print(seq_index<seq_length-1)
-                    #print(part_matched)
+                    #print(seq_index)
+                    #print(detect_sequence[index+1])
+                    #print(index <= detect_seq_length-1)
 
-                    if part_matched and index < detect_seq_length-1 and seq_index < sequences_length - 1 :
+                    # print(seq_index)
 
-                        detectSequence(detect_sequence[index+1], sequence[seq_index+1], detect_seq_length)
-                        # print(index)
-                        # print(seq_index)
+                seq_index += 1
 
-                    seq_index += 1
-
-                    #print(elements_matched == detect_seq_length)
+                #print(elements_matched == detect_seq_length)
 
 
             # is_part_detected = False
