@@ -28,7 +28,7 @@ class GspAlgorithm:
         self.data_set = data_set
         self.get_sequence_single_elements()
         #print(self.items)
-        self.gsp_algorithm(3)
+        self.gsp_algorithm(4)
 
     def gsp_algorithm(self, k):
 
@@ -124,10 +124,10 @@ class GspAlgorithm:
         detect_sequences = self.all_items[self.current_sequence_length]
 
         for detect_sequence in detect_sequences:
-            print('Detect', detect_sequence)
+            #print('Detect', detect_sequence)
 
             for sequence in self.data_set:
-                print('Sequence', sequence)
+                #print('Sequence', sequence)
 
                 self.detect_sequence(detect_sequence, sequence)
 
@@ -137,67 +137,95 @@ class GspAlgorithm:
 
     def detect_sequence(self, find_sequence, in_sequence):
 
-        sequence = in_sequence
-        detect_sequence = find_sequence[0]
+        # if find_sequence == [["1"], ["3", "4"]]:
+        #     pass
+        # else:
+        #     return False
+        # print("find_sequence", find_sequence)
+        # print("in_sequence", in_sequence)
 
-        detect_sequence_length = len(detect_sequence)
+        detect_sequence_length = len(find_sequence)
+
+        is_detected = False
+        part_matched = False
 
         is_detected = False
         part_matched = False
 
         index = 0
 
-        for detect_seq in detect_sequence:
-            detect_seq_length = len(detect_seq)
+        detect_first_ellement = find_sequence[0]
+        detect_seq_length = len(detect_first_ellement)
 
-            if is_detected:
-                break
+        seq_index = 0
+        for sequence in in_sequence:
+            #print("sequence", sequence)
+            elements_matched = 0
+            sequences_length = len(sequence)
+            #print(detect_first_ellement)
+            for detect_me in detect_first_ellement:
+                #print("detect_me", detect_first_ellement)
+                seq_exists = detect_me in sequence
+                if seq_exists:
+                    elements_matched += 1
+                #print(seq_exists)
+            part_matched = elements_matched == detect_seq_length
 
-            for detect_seq_elem in detect_seq:
-                elements_matched = 0
-                seq_index = 0
+            # print("len", len(in_sequence))
+            # print("seq_index", seq_index)
+            # print("detect_sequence_length", detect_sequence_length)
+            # print("part_matched", part_matched)
+            # print("part_matched", part_matched)
+            if part_matched and len(in_sequence) >= seq_index + detect_sequence_length:
+                matched = self.detect_rest_sequence(find_sequence, in_sequence, seq_index)
+                if matched:
+                    is_detected = True
+                    break
 
-                sequences_length = len(sequence)
-                for seq in sequence:
-                    for seq_elem in seq:
-                        seq_exists = detect_seq_elem in seq_elem
-                        if seq_exists:
-                            elements_matched += 1
-                    part_matched = elements_matched == detect_seq_length
-                    #print(index)
-                    if part_matched and index <= detect_seq_length - 1 and seq_index <= sequences_length - detect_seq_length - 1:
-
-                        matched = self.detect_rest_sequence(detect_sequence, sequence, seq_index + 1)
-
-                        if matched:
-                            is_detected = True
-                            break
-                    seq_index += 1
-            index += 1
+            seq_index += 1
+            #print(part_matched)
 
         #print(is_detected)
         return is_detected
-        #print(find_sequence, in_sequence)
-        #print("IS DETECTED", is_detected)
-        pass
+        #exit()
 
-    def detect_rest_sequence(self, detect_sequences, sequence, sequence_index):
+    def detect_rest_sequence(self, d1, s1, sequence_index):
+
+        # print("DETECT REST")
+        # print("find me ", d1)
+        # print("here  ", s1)
+        # print("at index   ", sequence_index)
+
+        detect_sequences = copy.deepcopy(d1)
+        sequence = copy.deepcopy(s1)
+        #
+        # print("sequence", sequence)
+        # print("detect_sequences", detect_sequences)
+        # print("sequence_index", sequence_index)
+        #
+        all_matched = 1
 
         for i in range(1, len(detect_sequences)):
+
+            if sequence_index + i > len(sequence)-1:
+                #print("FAAAAAAAAAK")
+                return False
+
+            #print("SLEDECI JE : ", sequence_index + i)
 
             d_sequence = detect_sequences[i]
             detect_seq_length = len(d_sequence)
 
+            elements_matched = 0
             for detect_seq_elem in d_sequence:
-                elements_matched = 0
-                for j in range(sequence_index, sequence_index+detect_seq_length):
+                seq_exists = detect_seq_elem in sequence[sequence_index + i]
+                if seq_exists:
+                    elements_matched += 1
+            part_matched = elements_matched == detect_seq_length
+            if part_matched:
+                all_matched += 1
 
-                    seq_exists = detect_seq_elem in sequence[j]
-                    if seq_exists:
-                        elements_matched += 1
-                part_matched = elements_matched == detect_seq_length
-
-                return part_matched
+        return all_matched == len(detect_sequences)
 
     def check_support(self, check_sequence, support=1):
 
@@ -253,6 +281,8 @@ class GspAlgorithm:
 
         sequences_2 = self.all_items[self.current_sequence_length]
 
+        print("pervious ", sequences_2)
+
         for sequence in sequences_2:
 
             first = sequence[0]
@@ -279,28 +309,22 @@ class GspAlgorithm:
                 cross_table[sequence_key]["second"].append(second)
                 pass
 
-        print(cross_table)
-
-
-        print(sequences_2)
         #exit()
+
+        print("cross_table ", cross_table)
+
         for sequence in sequences_2:
             key = self.to_string(sequence)
 
-            #print(key)
-
             sequence_minus_first = cross_table[key]["first"]
-        #
+
             for sequence_other in sequences_2:
                 lenth_other = len(sequence_other)
                 #print(sequence_other)
                 key_other = self.to_string(sequence_other)
-                #print(key_other)
-        #
+
                 if key != key_other:
 
-                    print(key_other)
-                    print(key_other == "( 1 )( 3145 )")
                     sequence_other_minus_last = cross_table[key_other]["second"]
                     break_outer = False
                     for first in sequence_minus_first:
@@ -310,44 +334,34 @@ class GspAlgorithm:
                         for last in sequence_other_minus_last:
 
                             if first == last:
-                                # print(sequence)
-                                # print(sequence_other)
-                                temp = self.get_new_sequence(sequence, sequence_other)
-                                # print(temp)
 
-                                # print(key)
-                                # print(key_other)
-                                # print("sequence", sequence)
-                                # print("sequence_other", sequence_other)
-                                print(temp)
-                                #if key =='( 1,2 )' and key_other == '( 1 )( 3 )':
-                                #     print("AAAAA")
-                                # #if sequence == [['2'], ['3']]:
-                                #     print(key)
-                                #     print(key_other)
-                                #     print("sequence", sequence)
-                                #     print("sequence_other", sequence_other)
-                                #     print(temp)
-                                #generated_sequence.append(temp)
+                                temp = self.get_new_sequence(sequence, sequence_other)
+
+                                generated_sequence.append(temp)
 
                                 break_outer = True
                                 break
-        exit()
-        #print(generated_sequence)
 
-        # for detect_me in generated_sequence:
-        #     #print("Detect me ", detect_me)
-        #
-        #     for sequence in self.data_set:
-        #
-        #         detected = self.detect_sequence(detect_me, sequence)
-        #         if detected:
-        #             print("Detect seq", detect_me)
-        #             print("Detect in ", sequence)
-        #             print(detected)
+        print("generated_sequence", generated_sequence)
+
+        new_array = []
+
+        for detect_me in generated_sequence:
+            for sequence in self.data_set:
+
+                detected = self.detect_sequence(detect_me, sequence)
+                if detected:
+                    new_array.append(detect_me)
+                    # print("Detect seq",  detect_me)
+                    # print("Detect in ", sequence)
+                    # print(detected)
 
 
-
+        #print("WASD")
+        print(new_array)
+        self.all_items.append(new_array)
+        self.current_sequence_length += 1
+        #print(self.all_items)
         pass
 
     @staticmethod
@@ -357,7 +371,47 @@ class GspAlgorithm:
         s2_t = copy.deepcopy(s2)
         s3 = []
         if isinstance(s2_t[len(s2_t) - 1], list) and len(s2_t[len(s2_t) - 1]) == 1:
-            print("ASDASdasdasdsa")
+
+            s1_last = s1_t[-1]
+            s2_first = s2_t[0]
+
+            if isinstance(s1_last, list) and isinstance(s2_first, list):
+                temp = s2_t[1:]
+                s3 = s1_t + temp
+            else:
+                s3.append(s1_t)
+                temp = s2_t[1:]
+                for elem in temp:
+                    s3.append(elem)
+        else:
+            s3 = []
+            merged = s1_t[-1]
+
+            if isinstance(merged, list):
+                for temp12 in s2_t:
+                    if temp12 not in merged:
+                        merged.append(temp12)
+
+                for t in s1_t[:-1]:
+                    s3.append(t)
+                length = len(s3)
+                s3.append(merged)
+                s3[length] = sorted(s3[length])
+            else:
+                temp = s2_t[1:]
+                s3 = s1_t + temp
+                # print("WASD")
+                # s3 = [s1]
+                # s3 += s2[1:]
+        return s3
+
+    @staticmethod
+    def get_new_sequence2(s1, s2):
+
+        s1_t = copy.deepcopy(s1)
+        s2_t = copy.deepcopy(s2)
+        s3 = []
+        if isinstance(s2_t[len(s2_t) - 1], list) and len(s2_t[len(s2_t) - 1]) == 1:
 
             s1_last = s1_t[-1]
             s2_first = s2_t[0]
