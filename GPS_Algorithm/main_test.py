@@ -285,47 +285,89 @@ class GspAlgorithm:
 
         for sequence in sequences_2:
 
+            sequence_length = len(sequence)
+
             first = sequence[0]
-            #
+            last = sequence[sequence_length-1]
+
             sequence_key = self.to_string(sequence)
 
             cross_table[sequence_key] = {}
-            cross_table[sequence_key]["first"] = []
-            cross_table[sequence_key]["second"] = []
+            cross_table[sequence_key]["minus_first"] = []
+            cross_table[sequence_key]["minus_last"] = []
 
-            if isinstance(first, list):
-                first = first[0]
-                second = sequence[1][0]
-                cross_table[sequence_key]["first"].append(second)
-                cross_table[sequence_key]["second"].append(first)
-                pass
-            # Multiple choices
+            single_mesure = True
+            for seq in sequence:
+                if isinstance(seq, list):
+                    single_mesure = False
+
+            if single_mesure:
+                for seq in sequence:
+                    temp_array = copy.deepcopy(sequence)
+                    temp_array.remove(seq)
+                    cross_table[sequence_key]["minus_first"].append(temp_array)
+                    cross_table[sequence_key]["minus_last"].append(temp_array)
             else:
-                second = sequence[1]
+                if len(first) > 1:
+                    for i in range(0, len(first)):
+                        temp_array = copy.deepcopy(first)
+                        temp_array.remove(first[i])
 
-                cross_table[sequence_key]["first"].append(first)
-                cross_table[sequence_key]["first"].append(second)
-                cross_table[sequence_key]["second"].append(first)
-                cross_table[sequence_key]["second"].append(second)
-                pass
+                        first_temp = []
 
-        #exit()
+                        first_temp.append(temp_array)
+                        for j in range(1, sequence_length):
+                            first_temp.append(sequence[j])
+
+                        cross_table[sequence_key]["minus_first"].append(first_temp)
+
+                elif len(first) == 1:
+                    temp_array = copy.deepcopy(sequence)
+                    #print("temp_array", temp_array)
+                    temp_array.pop(0)
+                    if len(temp_array) == 1:
+                        temp_array = temp_array[0]
+
+                    #print(temp_array)
+                    cross_table[sequence_key]["minus_first"].append(temp_array)
+                    pass
+
+                if len(last) > 1:
+                    temp_array = []
+                    for i in range(0, len(last)):
+                        temp_array = copy.deepcopy(last)
+                        temp_array.remove(last[i])
+
+                        first_temp = []
+
+                        for j in range(0, sequence_length-1):
+                            first_temp.append(sequence[j])
+
+                        first_temp.append(temp_array)
+                        cross_table[sequence_key]["minus_last"].append(first_temp)
+
+                elif len(last) == 1:
+                    temp_array = copy.deepcopy(sequence)
+                    temp_array.pop(sequence_length-1)
+                    if len(temp_array) == 1:
+                        temp_array = temp_array[0]
+                    cross_table[sequence_key]["minus_last"].append(temp_array)
+                    pass
 
         print("cross_table ", cross_table)
 
         for sequence in sequences_2:
             key = self.to_string(sequence)
 
-            sequence_minus_first = cross_table[key]["first"]
+            sequence_minus_first = cross_table[key]["minus_first"]
 
             for sequence_other in sequences_2:
                 lenth_other = len(sequence_other)
-                #print(sequence_other)
                 key_other = self.to_string(sequence_other)
 
                 if key != key_other:
 
-                    sequence_other_minus_last = cross_table[key_other]["second"]
+                    sequence_other_minus_last = cross_table[key_other]["minus_last"]
                     break_outer = False
                     for first in sequence_minus_first:
                         if break_outer:
@@ -333,11 +375,17 @@ class GspAlgorithm:
 
                         for last in sequence_other_minus_last:
 
+                            # TODO CHECK
+                            # first = sorted(first)
+                            # last = sorted(last)
+
                             if first == last:
-
                                 temp = self.get_new_sequence(sequence, sequence_other)
-
-                                generated_sequence.append(temp)
+                                print("1", sequence)
+                                print("2", sequence_other)
+                                print("sum : ", temp)
+                                if temp not in generated_sequence:
+                                    generated_sequence.append(temp)
 
                                 break_outer = True
                                 break
@@ -345,7 +393,6 @@ class GspAlgorithm:
         print("generated_sequence", generated_sequence)
 
         new_array = []
-
         for detect_me in generated_sequence:
             for sequence in self.data_set:
 
@@ -356,53 +403,54 @@ class GspAlgorithm:
                     # print("Detect in ", sequence)
                     # print(detected)
 
-
-        #print("WASD")
-        print(new_array)
         self.all_items.append(new_array)
         self.current_sequence_length += 1
-        #print(self.all_items)
-        pass
 
     @staticmethod
     def get_new_sequence(s1, s2):
 
         s1_t = copy.deepcopy(s1)
         s2_t = copy.deepcopy(s2)
+        s1_length = len(s1_t)
+
         s3 = []
-        if isinstance(s2_t[len(s2_t) - 1], list) and len(s2_t[len(s2_t) - 1]) == 1:
+
+        if isinstance(s2_t[0], list) and len(s2_t[0]) == 1:
 
             s1_last = s1_t[-1]
             s2_first = s2_t[0]
 
             if isinstance(s1_last, list) and isinstance(s2_first, list):
-                temp = s2_t[1:]
+                temp = s2_t[s1_length-1:]
                 s3 = s1_t + temp
             else:
                 s3.append(s1_t)
-                temp = s2_t[1:]
+                temp = s2_t[s1_length-1:]
                 for elem in temp:
                     s3.append(elem)
         else:
             s3 = []
-            merged = s1_t[-1]
+            last_elem = s1_t[-1]
+            merged = []
 
-            if isinstance(merged, list):
+            if isinstance(last_elem, list):
                 for temp12 in s2_t:
                     if temp12 not in merged:
                         merged.append(temp12)
 
                 for t in s1_t[:-1]:
                     s3.append(t)
-                length = len(s3)
+                #length = len(s3)
                 s3.append(merged)
-                s3[length] = sorted(s3[length])
+                #s3[length] = sorted(s3[length])
             else:
-                temp = s2_t[1:]
-                s3 = s1_t + temp
-                # print("WASD")
-                # s3 = [s1]
-                # s3 += s2[1:]
+                # temp = s2_t[1:]
+                # s3 = s1_t + temp
+                new_elem = []
+                for elem in s2_t:
+                    if elem not in s1_t:
+                        new_elem.append(elem)
+                s3 = s1_t + new_elem
         return s3
 
     @staticmethod
@@ -439,11 +487,14 @@ class GspAlgorithm:
                 s3.append(merged)
                 s3[length] = sorted(s3[length])
             else:
-                temp = s2_t[1:]
-                s3 = s1_t + temp
-                # print("WASD")
-                # s3 = [s1]
-                # s3 += s2[1:]
+                # temp = s2_t[1:]
+                # s3 = s1_t + temp
+                new_elem = []
+                for elem in s2_t:
+                    if elem not in s1_t:
+                        new_elem.append(elem)
+                s3 = s1_t + new_elem
+
         return s3
 
 
