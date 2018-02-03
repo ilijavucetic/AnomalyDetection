@@ -2,6 +2,7 @@ import csv
 from datetime import datetime, timedelta
 import random
 from collections import OrderedDict
+from SimulateTemperature.simulate_temperature import SimulateTemperatures
 
 # class BarBp:
 #     number_of_stops = 32
@@ -196,56 +197,126 @@ class BarBp:
 
         temp_date = start_date
 
-        print(temp_date)
-        print(end_date)
-
-        data = []
+        #print(temp_date)
+        print("START", start_date)
+        print("END", end_date)
+        #print(self.input_data)
+        current_route = 0
 
         file_write = csv.writer(open('row_data', 'w', newline=''), delimiter=',')
 
-        while temp_date < end_date:
+        file_write.writerow(["Date",
+                             "Speed", "Acceleration", "Temperature"])
 
-            for i in range(len(self.input_data)):
-                arrival_timing = datetime.strptime(self.input_data[i]['arrival'], '%Y-%m-%d %H:%M:%S')
-                departure_timing = datetime.strptime(self.input_data[i]['departure'], '%Y-%m-%d %H:%M:%S')
+        while temp_date <= end_date:
+            arrival_timing = datetime.strptime(self.input_data[current_route]['arrival'], '%Y-%m-%d %H:%M:%S')
+            departure_timing = datetime.strptime(self.input_data[current_route]['departure'], '%Y-%m-%d %H:%M:%S')
 
-                arrival_timing_deceleration = arrival_timing - timedelta(minutes=1)
-                #arrival_timing_acceleration = arrival_timing + timedelta(minutes=1)
+            arrival_timing_deceleration = arrival_timing - timedelta(minutes=1)
+            #arrival_timing_acceleration = arrival_timing + timedelta(minutes=1)
 
-                #departure_timing_deceleration = departure_timing - timedelta(minutes=1)
-                departure_timing_acceleration = departure_timing + timedelta(minutes=1)
+            #departure_timing_deceleration = departure_timing - timedelta(minutes=1)
+            departure_timing_acceleration = departure_timing + timedelta(minutes=1)
 
-                speed = None
-                acceleration = None
-                temparature = None
+            speed = None
+            acceleration = None
+            temparature = None
 
-                # STOP
-                if arrival_timing <= temp_date <= departure_timing:
-                    speed = 0
-                    acceleration = 0
-                    temperature = 25
-                # DEPARTURE ACCELERATION
-                elif departure_timing < temp_date < departure_timing_acceleration:
-                    speed = 20
-                    acceleration = 20
-                    temperature = 63
-                # ARRIVAL DECELERATION
-                elif arrival_timing_deceleration < temp_date < arrival_timing:
-                    speed = 20
-                    acceleration = -20
-                    temperature = 53
-                else:
-                    speed = 40
-                    acceleration = 0
-                    temperature = 44
+            print("temp_date", temp_date)
+            print("arrival", arrival_timing)
+            print("departure", departure_timing)
 
-                # if speed is not None:
-                #     print(speed)
-                #     print(acceleration)
+            speed = None
+            acceleration = None
+            temparature = None
+            print(temp_date)
+            temperature_object = SimulateTemperatures(temp_date)
+            random_temperature = temperature_object.get_radom_temperature()
 
-                file_write.writerow([self.input_data[i]['arrival'], self.input_data[i]['departure'],
-                                     speed, acceleration, temperature])
-            temp_date = temp_date + timedelta(minutes=5)
+            # TODO SIMULATE RANDOM VALUE AND ADD HUMIDITY IF NECESSARY
+            # STOP
+            if arrival_timing <= temp_date <= departure_timing:
+                speed = 0
+                acceleration = 0
+                temperature = random_temperature
+            # DEPARTURE ACCELERATION
+            elif departure_timing < temp_date < departure_timing_acceleration:
+                speed = 20
+                acceleration = 20
+                temperature = random_temperature + 2
+            # ARRIVAL DECELERATION
+            elif arrival_timing_deceleration < temp_date < arrival_timing:
+                speed = 20
+                acceleration = -20
+                temperature = random_temperature + 10
+            else:
+                # TODO GENERATE RANDOM SPEED AND Acceleration
+                speed = 40
+                acceleration = 0
+                temperature = random_temperature + 5
+
+            # if speed is not None:
+            #     print(speed)`
+            #     print(acceleration)
+
+            file_write.writerow([temp_date,
+                                 speed, acceleration, temperature])
+
+            temp_date = temp_date + timedelta(minutes=1)
+            if temp_date > departure_timing:
+                current_route += 1
+
+
+
+
+
+        data = []
+
+        #file_write = csv.writer(open('row_data', 'w', newline=''), delimiter=',')
+
+        # while temp_date < end_date:
+        #
+        #     for i in range(len(self.input_data)):
+        #         arrival_timing = datetime.strptime(self.input_data[i]['arrival'], '%Y-%m-%d %H:%M:%S')
+        #         departure_timing = datetime.strptime(self.input_data[i]['departure'], '%Y-%m-%d %H:%M:%S')
+        #
+        #         arrival_timing_deceleration = arrival_timing - timedelta(minutes=1)
+        #         #arrival_timing_acceleration = arrival_timing + timedelta(minutes=1)
+        #
+        #         #departure_timing_deceleration = departure_timing - timedelta(minutes=1)
+        #         departure_timing_acceleration = departure_timing + timedelta(minutes=1)
+        #
+        #         speed = None
+        #         acceleration = None
+        #         temparature = None
+        #
+        #         # STOP
+        #         if arrival_timing <= temp_date <= departure_timing:
+        #             speed = 0
+        #             acceleration = 0
+        #             temperature = 25
+        #         # DEPARTURE ACCELERATION
+        #         elif departure_timing < temp_date < departure_timing_acceleration:
+        #             speed = 20
+        #             acceleration = 20
+        #             temperature = 63
+        #         # ARRIVAL DECELERATION
+        #         elif arrival_timing_deceleration < temp_date < arrival_timing:
+        #             speed = 20
+        #             acceleration = -20
+        #             temperature = 53
+        #         else:
+        #             speed = 40
+        #             acceleration = 0
+        #             temperature = 44
+        #
+        #         # if speed is not None:
+        #         #     print(speed)
+        #         #     print(acceleration)
+        #
+        #         file_write.writerow([self.input_data[i]['arrival'], self.input_data[i]['departure'],
+        #                              speed, acceleration, temperature])
+        #     temp_date = temp_date + timedelta(minutes=5)
 
 start_dates = ['19:59', '06:40']
 
