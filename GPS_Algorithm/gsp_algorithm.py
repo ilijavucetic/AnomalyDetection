@@ -481,21 +481,22 @@ class GspAlgorithm:
 if __name__ == "__main__":
     sequences = []
 
-    s1 = [["1", "2"], ["3"], ["1"]]
-    s2 = [["1", "2"], ["4"]]
-    s3 = [["1"], ["3", "4"]]
-    s4 = [["1", "3"], ["5"]]
-    s5 = [["2"], ["3", "4"]]
-    s6 = [["2"], ["3", "5"]]
-    s7 = [["2"], ["3"], ["5"]]
+    # s1 = [["1", "2"], ["3"], ["1"]]
+    # s2 = [["1", "2"], ["4"]]
+    # s3 = [["1"], ["3", "4"]]
+    # s4 = [["1", "3"], ["5"]]
+    # s5 = [["2"], ["3", "4"]]
+    # s6 = [["2"], ["3", "5"]]
+    # s7 = [["2"], ["3"], ["5"]]
+
+    s1 = [["S0", "A0", "T1"], ["S2", "A0", "T1"], ["S0", "A0", "TO"],
+          ["S0", "A0", "T1"], ["S0", "A0", "T0"], ["S0" "A0" "T1"], ["S0", "A0" "T0"], ["S0", "A0", "T1"],
+          ["S2", "A0", "T1"], ["S0", "A0", "T1"]]
+
 
     sequences.append(s1)
-    sequences.append(s2)
-    sequences.append(s3)
-    sequences.append(s4)
-    sequences.append(s5)
-    sequences.append(s6)
-    sequences.append(s7)
+    #sequences.append(s2)
+    #sequences.append(s3)
 
     result = GspAlgorithm(sequences)
     all_items = result.all_items
@@ -505,6 +506,4 @@ if __name__ == "__main__":
     #     for sequence_elem in sequence:
     #         print(sequence_elem)
     #     pass
-
-
-    print(result.all_items[-1])
+    print("test", result.all_items[-1])

@@ -21,7 +21,7 @@ from SimulateTemperature.simulate_temperature import SimulateTemperatures
 
 
 class BarBp:
-
+    journey_id = None
     distance = 500
     duration = None
     average_speed = 0
@@ -36,8 +36,9 @@ class BarBp:
 
     output_file = "bar_beograd_output.csv"
 
-    def __init__(self, journey_start):
+    def __init__(self, journey_start, journey_id):
         self.journey_start = journey_start
+        self.journey_id = journey_id
         self.load_data()
         self.write_file()
         self.duration = self.calculate_journey_duration()
@@ -203,10 +204,10 @@ class BarBp:
         #print(self.input_data)
         current_route = 0
 
-        file_write = csv.writer(open('row_data', 'w', newline=''), delimiter=',')
+        file_write = csv.writer(open('row_data', 'a', newline=''), delimiter=',')
 
-        file_write.writerow(["Date",
-                             "Speed", "Acceleration", "Temperature"])
+        # file_write.writerow(["Date", "Train", "Journey"
+        #                      "Speed", "Acceleration", "Temperature"])
 
         while temp_date <= end_date:
             arrival_timing = datetime.strptime(self.input_data[current_route]['arrival'], '%Y-%m-%d %H:%M:%S')
@@ -259,8 +260,10 @@ class BarBp:
             #     print(speed)`
             #     print(acceleration)
 
-            file_write.writerow([temp_date,
-                                 speed, acceleration, temperature])
+            time_stamp = int(temp_date.timestamp())
+
+            file_write.writerow([temp_date, "train"+ str(self.journey_id), self.journey_id,
+                                 speed, acceleration, temperature, time_stamp])
 
             temp_date = temp_date + timedelta(minutes=1)
             if temp_date > departure_timing:
@@ -325,4 +328,9 @@ current_date = now.strftime("%Y-%m-%d ")
 
 #journey_start = current_date + start_dates[0] + ':00'
 journey_start = '2017-12-16 08:20:00'
-x = BarBp(journey_start)
+
+for i in range(1, 3):
+    x = BarBp(journey_start, i)
+
+
+#x = BarBp(journey_start)
