@@ -25,9 +25,7 @@ class BarBp:
     distance = 500
     duration = None
     average_speed = 0
-
     journey_end = None
-
     max_start_latency = 5 * 60
     max_end_latency = 45 * 60
     min_stop_duration = 60
