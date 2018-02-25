@@ -62,8 +62,9 @@ class BarBp:
         with open(file_name, newline='', encoding='utf-8') as csvfile:
             file_reader = csv.reader(csvfile, delimiter=',')
             for row in file_reader:
-                stop = '2017-12-16 ' + row[1] + ':00'
-                go = '2017-12-16 ' + row[2] + ':00'
+                date = self.journey_start.split(' ')[0]
+                stop = date + ' ' + row[1] + ':00'
+                go = date + ' ' + row[2] + ':00'
                 temp = {'arrival': stop, 'departure': go, 'place': row[0]}
                 self.input_data.append(temp)
                 arrival_times.append(stop)
@@ -160,7 +161,7 @@ class BarBp:
             for index, latency in latency_dict.items():
                 if i == index:
                     sum_stop_latency += latency
-                    print(sum_stop_latency)
+                    #print(sum_stop_latency)
                     any_stop_is_late = True
                     break
 
@@ -199,62 +200,101 @@ class BarBp:
         temp_date = start_date
 
         #print(temp_date)
-        print("START", start_date)
-        print("END", end_date)
+        # print("START", start_date)
+        # print("END", end_date)
         #print(self.input_data)
         current_route = 0
+        current_route_prev = 0
 
         file_write = csv.writer(open('row_data', 'a', newline=''), delimiter=',')
 
-        # file_write.writerow(["Date", "Train", "Journey"
-        #                      "Speed", "Acceleration", "Temperature"])
+        # file_write.writerow(["Date", "Train", "Journey",
+        #                      "Speed", "Acceleration", "Temperature", "Timestamp"])
+
+        current_temperature = None
+        counter = 0
+        temperature_rising = 0
+        temperature_decreasing = 0
+
+        accelleration_speed = 20
 
         while temp_date <= end_date:
             arrival_timing = datetime.strptime(self.input_data[current_route]['arrival'], '%Y-%m-%d %H:%M:%S')
             departure_timing = datetime.strptime(self.input_data[current_route]['departure'], '%Y-%m-%d %H:%M:%S')
 
             arrival_timing_deceleration = arrival_timing - timedelta(minutes=1)
-            #arrival_timing_acceleration = arrival_timing + timedelta(minutes=1)
-
-            #departure_timing_deceleration = departure_timing - timedelta(minutes=1)
             departure_timing_acceleration = departure_timing + timedelta(minutes=1)
 
-            speed = None
-            acceleration = None
-            temparature = None
-
-            print("temp_date", temp_date)
-            print("arrival", arrival_timing)
-            print("departure", departure_timing)
+            departure_timing_prev = datetime.strptime(self.input_data[current_route_prev]['departure'], '%Y-%m-%d %H:%M:%S')
+            departure_timing_acceleration_prev = departure_timing_prev + timedelta(minutes=1)
 
             speed = None
             acceleration = None
             temparature = None
-            print(temp_date)
+
+            # print("temp_date", temp_date)
+            # print("arrival", arrival_timing)
+            # print("departure", departure_timing)
+
+            # print("departure_timing_acceleration", departure_timing_acceleration)
+
+            speed = None
+            acceleration = None
+            temparature = None
+            #print(temp_date)
+
             temperature_object = SimulateTemperatures(temp_date)
             random_temperature = temperature_object.get_radom_temperature()
+
+            if counter == 0:
+                current_temperature = random_temperature
+
 
             # TODO SIMULATE RANDOM VALUE AND ADD HUMIDITY IF NECESSARY
             # STOP
             if arrival_timing <= temp_date <= departure_timing:
                 speed = 0
                 acceleration = 0
-                temperature = random_temperature
+                temperature_decreasing += 1
+                #temperature = random_temperature
             # DEPARTURE ACCELERATION
-            elif departure_timing < temp_date < departure_timing_acceleration:
-                speed = 20
+            elif departure_timing_prev < temp_date < departure_timing_acceleration_prev:
+                speed = accelleration_speed + 5
+                #print("Speed", speed)
                 acceleration = 20
-                temperature = random_temperature + 2
+                temperature_rising += 1
+                #temperature = random_temperature + 2
+                # get_random_temperature = random.randrange(0, 3)
+                # current_temperature = current_temperature + get_random_temperature
+
             # ARRIVAL DECELERATION
             elif arrival_timing_deceleration < temp_date < arrival_timing:
                 speed = 20
+                #print(speed)
                 acceleration = -20
-                temperature = random_temperature + 10
+                temperature_rising += 1
+                #temperature = random_temperature + 10
+                # get_random_temperature = random.randrange(0, 3)
+                # current_temperature = current_temperature + get_random_temperature
             else:
                 # TODO GENERATE RANDOM SPEED AND Acceleration
-                speed = 40
+                get_random_speed = random.randrange(40, 100)
+                speed = get_random_speed
+                print(speed)
                 acceleration = 0
-                temperature = random_temperature + 5
+                temperature_rising += 1
+                # get_random_temperature = random.randrange(0, 2)
+                # current_temperature = current_temperature + get_random_temperature
+                #temperature = random_temperature + 5
+
+            if temperature_rising == 10:
+                temperature_rising = 0
+                current_temperature += 1
+                
+            if temperature_decreasing == 3:
+                temperature_decreasing = 0
+                get_random_temperature = random.randrange(0, 2)
+                current_temperature = current_temperature - get_random_temperature
 
             # if speed is not None:
             #     print(speed)`
@@ -262,16 +302,16 @@ class BarBp:
 
             time_stamp = int(temp_date.timestamp())
 
-            file_write.writerow([temp_date, "train"+ str(self.journey_id), self.journey_id,
-                                 speed, acceleration, temperature, time_stamp])
+            #print("Current temp", current_temperature)
+            file_write.writerow([temp_date, "train" + str(self.journey_id), self.journey_id,
+                                 speed, acceleration, current_temperature, time_stamp])
 
             temp_date = temp_date + timedelta(minutes=1)
             if temp_date > departure_timing:
                 current_route += 1
+                current_route_prev = current_route-1
 
-
-
-
+            counter += 1
 
         data = []
 
@@ -327,9 +367,15 @@ now = datetime.now()
 current_date = now.strftime("%Y-%m-%d ")
 
 #journey_start = current_date + start_dates[0] + ':00'
-journey_start = '2017-12-16 08:20:00'
+journey_start = ['2017-12-16 08:20:00', '2017-12-17 08:20:00',
+                 '2017-12-18 08:20:00', '2017-12-19 08:20:00',
+                 '2017-12-20 08:20:00', '2017-12-21 08:20:00', '2017-12-16 08:20:00',
+                 '2017-12-22 08:20:00', '2017-12-23 08:20:00',
+                 '2017-12-24 08:20:00','2017-12-25 08:20:00']
 
-for i in range(1, 3):
+for i in range(1, 10):
+    j = i + 16
+    journey_start = '2017-12-' + str(j) + ' 08:20:00'
     x = BarBp(journey_start, i)
 
 
